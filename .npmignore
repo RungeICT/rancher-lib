@@ -1,0 +1,8 @@
+src/
+docs/
+.vscode/
+.babelrc
+.eslintignore
+.eslintrc
+gulpfile.js
+jsdoc.json

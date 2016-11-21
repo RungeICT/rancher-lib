@@ -37,3 +37,6 @@ Promise.all([
   console.log("complete");
 })
 ```
+
+### TODO
+ - Flesh out the rest of the api
