@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>environment.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Base.html">Base</a><ul class='methods'><li data-type='method'><a href="Base.html#refresh">refresh</a></li></ul></li><li><a href="Container.html">Container</a><ul class='methods'><li data-type='method'><a href="Container.html#refresh">refresh</a></li><li data-type='method'><a href="Container.html#restart">restart</a></li><li data-type='method'><a href="Container.html#start">start</a></li><li data-type='method'><a href="Container.html#stop">stop</a></li></ul></li><li><a href="Environment.html">Environment</a><ul class='methods'><li data-type='method'><a href="Environment.html#getContainerByHostAndName">getContainerByHostAndName</a></li><li data-type='method'><a href="Environment.html#getHosts">getHosts</a></li><li data-type='method'><a href="Environment.html#getServiceByPath">getServiceByPath</a></li><li data-type='method'><a href="Environment.html#getStacks">getStacks</a></li><li data-type='method'><a href="Environment.html#refresh">refresh</a></li></ul></li><li><a href="Host.html">Host</a><ul class='methods'><li data-type='method'><a href="Host.html#getContainers">getContainers</a></li><li data-type='method'><a href="Host.html#refresh">refresh</a></li></ul></li><li><a href="Service.html">Service</a><ul class='methods'><li data-type='method'><a href="Service.html#finishUpgrade">finishUpgrade</a></li><li data-type='method'><a href="Service.html#refresh">refresh</a></li><li data-type='method'><a href="Service.html#restart">restart</a></li><li data-type='method'><a href="Service.html#upgradeService">upgradeService</a></li><li data-type='method'><a href="Service.html#waitForServiceUpgraded">waitForServiceUpgraded</a></li></ul></li><li><a href="Stack.html">Stack</a><ul class='methods'><li data-type='method'><a href="Stack.html#getServices">getServices</a></li><li data-type='method'><a href="Stack.html#refresh">refresh</a></li></ul></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">environment.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import {rfetch} from "utils/http";
+import logger from "utils/logger";
+import Base from "./base";
+import Host from "./host";
+import Stack from "./stack";
+
+const log = logger("rancher-lib:enviroment:");
+/**
+ * @class Environment
+ * @extends Base
+*/
+class Environment extends Base {
+  templateString() {
+    return `v1/projects/${this.id}`;
+  }
+  /**
+   * Get all stacks on an environment
+   * @returns {Stack[]} Resolve
+   * @returns {Error} Reject
+   */
+  getStacks() {
+    return rfetch(`v1/projects/${this.id}/environments`, this.connection, undefined)
+      .then((response) => response.data.map((d) => new Stack(this.connection, d)));
+  }
+  /**
+   * Get all hosts on an environment
+   * @returns {Host[]} Resolve
+   * @returns {Error} Reject
+   */
+  getHosts() {
+    return rfetch(`v1/projects/${this.id}/hosts`, this.connection, undefined)
+      .then((response) => response.data.map((d) => new Host(this.connection, d)));
+  }
+  //TODO: put more checks for invalid
+  /**
+   * Parse a string based path to return a service
+   * @param {string} path - Path to the service, e.g. Database\Postgres.
+   * @returns {Service} Resolve
+   * @returns {Error} Reject
+   */
+  getServiceByPath(p) { //e.g. Database\Database
+    const [stackName, serviceName] = p.split("\\");
+    return this.getStacks().then((stacks) => {
+      return stacks.filter((stack) => {
+        return stack.name === stackName;
+      })[0].getServices().then((services) => {
+        return services.filter((service) => {
+          return service.name === serviceName;
+        })[0];
+      });
+    });
+  }
+  
+  //TODO: put more checks for invalid
+  /**
+   * Parse a string based path to return a service
+   * @param {string} hostName - Host name,
+   * @param {string} containerName - Container name,
+   * @returns {Container} Resolve
+   * @returns {Error} Reject
+   */
+  getContainerByHostAndName(hostName, containerName) {
+    return this.getHosts().then((hosts) => {
+      return hosts.filter((host) => {
+        return host.hostname === hostName;
+      })[0].getContainers().then((containers) => {
+        return containers.filter((container) => {
+          return container.name === containerName;
+        })[0];
+      });
+    });
+  }
+
+}
+
+export default Environment;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Mon Nov 21 2016 11:46:48 GMT+1000 (E. Australia Standard Time) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

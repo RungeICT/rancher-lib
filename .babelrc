@@ -1,0 +1,17 @@
+{
+  "presets": ["stage-0", "es2015"],
+  "plugins": [[
+      "module-resolver", {
+        "root": ["./"],
+        "alias": {
+          "utils": "./src/utils"
+        }
+      }
+    ],
+    "typecheck",
+    "syntax-flow",
+    "transform-flow-strip-types",
+    "autobind-class-methods"
+  ],
+  "ignore": []
+}
