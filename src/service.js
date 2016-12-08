@@ -1,6 +1,7 @@
 import {rfetch} from "utils/http";
 import Base from "./base";
 import logger from "utils/logger";
+import Container from "./container";
 
 const log = logger("rancher-lib:service:");
 /**
@@ -17,9 +18,20 @@ class Service extends Base {
    */
   restart(data = {rollingRestartStrategy: ""}) {
     return rfetch(`${this.templateString()}/?action=restart`, this.connection, {
-      method: "POST", 
+      method: "POST",
       body: JSON.stringify(data)
     });
+  }
+  /**
+   * Get all containers on under a service
+   * @returns {Container[]} Resolve
+   * @returns {Error} Reject
+   */
+  getContainers() {
+    return rfetch(`${this.templateString()}/instances`, this.connection, undefined)
+      .then((response) => response.data
+        .filter((d) => d.type === "container")
+        .map((d) => new Container(this.connection, d)));
   }
   //TODO: put check in place if id was passed to the constructor
   /**
